@@ -3,8 +3,8 @@ file located in /proc/sys/vm and is named “swappiness”.
 Temporary change lost on reboot
 sudo sysctl vm.swappiness=1
 
-#permanent change by navigating to /etc/sysctl.conf
-#add the below line
+permanent changes to /etc/sysctl.conf
+by add the below line
 vm.swappiness=”1”
 
 Mount attributes of all volumes
