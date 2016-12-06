@@ -1,44 +1,99 @@
-**Due to incompatiable version of OS , I have lost a lot of time in setting up the service.**
+Swappiness
+file located in /proc/sys/vm and is named “swappiness”.
+Temporary change lost on reboot
+sudo sysctl vm.swappiness=1
 
-**yum install mysql-community-server**
+#permanent change by navigating to /etc/sysctl.conf
+#add the below line
+vm.swappiness=”1”
 
-mysql -u -p 
-set password for 'root'@'localhost' = password ('auth_string');
+Mount attributes of all volumes
+Fdisk - l
+Sfdisk –l -uM
+Cfdisk /dev/xvde
+df -h
+lsblk
+blkid
 
-**yum install mysql-connector-java**
+Reserve space of any non-root, ext-based volumes
+tune2fs -l /dev/xvde
+root@\Barlearn1$ tune2fs -l /dev/xvde
+tune2fs 1.41.12 (17-May-2010)
+Filesystem volume name: 
+Last mounted on: /
+Filesystem UUID: 6a49d30a-8aa0-4380-96d3-eb7b2dc33e59
+Filesystem magic number: 0xEF53
+Filesystem revision #: 1 (dynamic)
 
-**yum repolist enabled | grep mysql**
-root@\Barlearn1$ yum repolist enabled | grep mysql
-mysql-connectors-community MySQL Connectors Community                         24
-mysql-tools-community      MySQL Tools Community                              42
-mysql55-community          MySQL 5.5 Community Server                        316
+df -hT
 
-1. add to  file my.cnf on Server1 path /etc with the below settings:
-[mysqld]
-log-bin=mysql-bin
-server-id	= 1
-auto_increment_increment = 10
-auto_increment_offset = 1
+root@\Barlearn1$ df -hT
+Filesystem Type Size Used Avail Use% Mounted on
+/dev/xvde ext4 7.8G 1.5G 6.0G 20% /
+tmpfs tmpfs 7.3G 0 7.3G 0% /dev/shm
 
-2. Change mode/permission for my.cnf to _rw_r__r__ else mysql will igonore it. 
-sudo chmod 644 my.cnf
+Show that transparent hugepages is disabled
+Sysctl -a | grep hugepages
+vm.nr_hugepages = 0
+vm.nr_hugepages_mempolicy = 0
+vm.hugepages_treat_as_movable = 0
+vm.nr_overcommit_hugepages = 0
 
-3. Stop and start mysql.
+root@\Barlearn1$ pwd
+/sys/kernel/mm
+root@\Barlearn1$ ls -ltr
+total 0
+drwxr-xr-x 2 root root 0 Dec 6 02:40 ksm
+drwxr-xr-x 3 root root 0 Dec 6 02:40 hugepages
 
-create user replicant@'%' identified by 'password';
-GRANT SELECT, PROCESS, FILE, SUPER, REPLICATION CLIENT, REPLICATION SLAVE, RELOAD ON *.* TO replicant@'%';
-flush Privileges; 
+root@\Barlearn1$ cat grub.conf
+default=0
+timeout=1
 
-On the master MySQL node, grant replication privileges for your replica node:
-a. Log in with mysql -u ... -p 
-b. Note the FQDN of your replica host.
-c. mysql> GRANT REPLICATION SLAVE ON *.* TO 'user'@'FQDN' IDENTIFIED BY 'password';
-d. mysql> SET GLOBAL binlog_format = 'ROW'; 
-e. mysql> FLUSH TABLES WITH READ LOCK;
+title CentOS (2.6.32-642.11.1.el6.x86_64)
+root (hd0)
+kernel /boot/vmlinuz-2.6.32-642.11.1.el6.x86_64 root=/dev/xvde ro crashkernel=auto LANG=en_US.UTF-8 KEYTABLE=us
+initrd /boot/initramfs-2.6.32-642.11.1.el6.x86_64.img
+title CentOS-6.3-x86_64-GA-03 2.6.32-279.el6.x86_64
+root (hd0)
+kernel /boot/vmlinuz-2.6.32-279.el6.x86_64 root=/dev/xvde ro
+initrd /boot/initramfs-2.6.32-279.el6.x86_64.img
 
-In a second terminal session, log into the MySQL master and show its status:
-a. mysql> SHOW MASTER STATUS;
-b. Make note of the file name and byte offset. The replica needs this info to sync to the master.
-c. Logout of the second session; remove the lock on the first with mysql> UNLOCK TABLES;
+Report the network interface attributes
+cat resolv.conf
+cat fstab
 
+Show forward and reverse host lookups using getent and nslookup
 
+getent hosts ip-172-31-10-176 | awk '{print $1}'
+172.31.10.176
+
+Nslookup was unavailable
+
+Yum install bind-utils
+
+root@\Barlearn1$ nslookup cloudera.com
+Server: 172.31.0.2
+Address: 172.31.0.2#53
+
+Non-authoritative answer:
+Name: cloudera.com
+Address: 74.217.76.7
+
+Verify the nscd service is running
+By default the service was missing and I installed using
+Yum install nscd
+root@\Barlearn1$ service nscd status
+nscd (pid 2469) is running...
+Verify the ntpd service is running?
+Yum install ntp
+root@\Barlearn1$ service ntpd status
+ntpd (pid 2532) is running...
+
+Service iptables stop
+service iptables status
+
+iptables: Firewall is not running.
+[root@ip-172-31-10-176 ~]#
+
+Completed !
