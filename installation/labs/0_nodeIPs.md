@@ -1,4 +1,5 @@
 Public IPs
+
 54.169.7.58,
 
 54.179.182.132,
@@ -10,6 +11,7 @@ Public IPs
 52.221.238.109,
 
 Public DNS
+
 ec2-54-169-7-58.ap-southeast-1.compute.amazonaws.com,
 
 ec2-54-179-182-132.ap-southeast-1.compute.amazonaws.com, 
@@ -22,6 +24,7 @@ ec2-52-221-238-109.ap-southeast-1.compute.amazonaws.com
 
 
 Private DNS
+
 ip-172-31-10-176.ap-southeast-1.compute.internal, 
 
 ip-172-31-15-47.ap-southeast-1.compute.internal, 
