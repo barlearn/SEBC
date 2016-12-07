@@ -1,0 +1,99 @@
+I had a lot of issues with my instance of Linux on AWS and had trouble installing pre-requisites and core components.Over these 2 days i have trouble shooted the issues and managed to complete it now (i.e. end of day3 :( )
+
+Yesterday I have unstalled the CM and installed it again on my instance, I thought i will add that here as this is an additional task.
+
+Please find attached document with the screen shots and below are the steps in completing the same.
+
+#stop cloudera server
+service cloudera-scm-server stop 
+
+#remove cloudera server
+yum remove cloudera-manager-server
+
+#The below steps will be on all Agent hosts
+service cloudera-scm-agent hard_stop
+service cloudera-scm-agent hard_stop_confirmed
+
+yum remove 'cloudera-manager-*'
+
+yum clean all 
+
+#Script to remove all other services installed
+for u in cloudera-scm flume hadoop hdfs hbase hive httpfs hue impala llama mapred oozie solr spark sqoop sqoop2 yarn zookeeper; do sudo kill $(ps -u $u -o pid=); done
+
+umount cm_processes
+
+rm -Rf /usr/share/cmf /var/lib/cloudera* /var/cache/yum/cloudera* /var/log/cloudera* /var/run/cloudera*
+
+rm /tmp/.scm_prepare_node.lock
+
+rm -Rf /var/lib/flume-ng /var/lib/hadoop* /var/lib/hue /var/lib/navigator /var/lib/oozie /var/lib/solr /var/lib/sqoop* /var/lib/zookeeper
+
+rm -Rf data_drive_path/dfs data_drive_path/mapred data_drive_path/yarn
+
+#MySQL database server steps
+
+#chkconfig for mysql
+/sbin/chkconfig 
+
+#check the jdbc connector for mysql (exists from previous install) 
+ll /usr/share/java/mysql-connector-java.jar
+
+#login to mysql
+mysql -u root -p 
+
+#Drop database (to have a clean repository)
+drop database scm; 
+
+#Create mysql database (re-create the database)
+create database scm DEFAULT CHARACTER SET utf8;
+
+#Create repository user 
+grant all on scm.* TO 'scm'@'%' IDENTIFIED BY 'scm_password';
+
+#create other schemas
+
+CREATE USER 'rman'@'%' IDENTIFIED BY 'auth_string';
+create database rman DEFAULT CHARACTER SET utf8;
+GRANT ALL PRIVILEGES ON rman.* TO 'rman'@'%';
+
+CREATE USER 'metastore'@'%' IDENTIFIED BY 'auth_string';
+create database metastore DEFAULT CHARACTER SET utf8;
+GRANT ALL PRIVILEGES ON metastore.* TO 'metastore'@'%';
+
+CREATE USER 'sentry'@'%' IDENTIFIED BY 'auth_string';
+create database sentry DEFAULT CHARACTER SET utf8;
+GRANT ALL PRIVILEGES ON sentry.* TO 'sentry'@'%';
+
+CREATE USER 'hue'@'%' IDENTIFIED BY 'auth_string';
+create database hue DEFAULT CHARACTER SET utf8;
+GRANT ALL PRIVILEGES ON hue.* TO 'hue'@'%';
+
+CREATE USER 'nav'@'%' IDENTIFIED BY 'auth_string';
+create database nav DEFAULT CHARACTER SET utf8;
+GRANT ALL PRIVILEGES ON nav.* TO 'nav'@'%';
+
+CREATE USER 'navms'@'%' IDENTIFIED BY 'auth_string';
+create database navms DEFAULT CHARACTER SET utf8;
+GRANT ALL PRIVILEGES ON navms.* TO 'navms'@'%';
+
+CREATE USER 'oozie'@'%' IDENTIFIED BY 'auth_string';
+create database oozie DEFAULT CHARACTER SET utf8;
+GRANT ALL PRIVILEGES ON oozie.* TO 'oozie'@'%';
+
+#Install the downloaded repo 
+yum install cloudera-manager-daemons cloudera-manager-server
+
+#Install the agent service
+yum install cloudera-manager-agent cloudera-manager-daemons
+
+#start agent
+service cloudera-scm-agent start
+
+#start server
+service cloudera-scm-server start
+
+tailf /var/log/cloudera-scm-server/cloudera-scm-server.log
+
+#Vey important step to provide the schema details for setting up repositories
+/usr/share/cmf/schema/scm_prepare_database.sh  mysql scm scm scm_password
