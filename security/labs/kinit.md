@@ -1,7 +1,11 @@
 [root@ip-172-31-10-176 ~]# kinit cloudera-scm@PUNEETHA.COM
+
 Password for cloudera-scm@PUNEETHA.COM:
+
 [root@ip-172-31-10-176 ~]# klist -c
+
 Ticket cache: FILE:/tmp/krb5cc_0
+
 Default principal: cloudera-scm@PUNEETHA.COM
 
 Valid starting     Expires            Service principal
